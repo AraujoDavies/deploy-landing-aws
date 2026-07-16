@@ -1,0 +1,29 @@
+# Local Terraform working directory (providers, modules cache)
+.terraform/
+
+# Local state — use the remote backend instead
+*.tfstate
+*.tfstate.*
+.terraform.tfstate.lock.info
+
+# Crash logs
+crash.log
+crash.*.log
+
+# CLI / override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Sensitive variable files (keep non-secret envs/*.tfvars tracked)
+*.auto.tfvars
+*.auto.tfvars.json
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+other_files/

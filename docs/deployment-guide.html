@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AtaqTech — Deployment Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── Reset & base ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0b1326;
+      --surface:     #131b2e;
+      --surface-mid: #171f33;
+      --surface-hi:  #222a3d;
+      --border:      rgba(67,70,85,0.4);
+      --text:        #dae2fd;
+      --muted:       #8d90a0;
+      --primary:     #b4c5ff;
+      --blue-start:  #2563EB;
+      --blue-end:    #60A5FA;
+      --green:       #4ade80;
+      --yellow:      #fbbf24;
+      --red:         #f87171;
+    }
+
+    html { font-size: 15px; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      padding: 0;
+    }
+
+    /* ── Page wrapper ─────────────────────────────────── */
+    .page {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 48px 40px;
+    }
+
+    /* ── Cover ────────────────────────────────────────── */
+    .cover {
+      background: linear-gradient(135deg, var(--blue-start) 0%, var(--blue-end) 100%);
+      border-radius: 16px;
+      padding: 52px 48px;
+      margin-bottom: 48px;
+      page-break-after: always;
+    }
+    .cover-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .cover-logo-icon {
+      width: 44px; height: 44px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .cover-logo-name { font-size: 1.4rem; font-weight: 800; color: #fff; }
+    .cover h1 { font-size: 2.4rem; font-weight: 800; color: #fff; line-height: 1.2; margin-bottom: 14px; }
+    .cover p  { color: rgba(255,255,255,0.85); font-size: 1.05rem; max-width: 480px; }
+    .cover-meta {
+      margin-top: 40px;
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .cover-meta-item { color: rgba(255,255,255,0.8); font-size: 0.85rem; }
+    .cover-meta-item strong { display: block; color: #fff; font-size: 1rem; }
+
+    /* ── TOC ──────────────────────────────────────────── */
+    .toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 32px;
+      margin-bottom: 48px;
+      page-break-after: always;
+    }
+    .toc h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 16px; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin: 6px 0; }
+    .toc a  { color: var(--primary); text-decoration: none; font-size: 0.95rem; }
+    .toc a:hover { text-decoration: underline; }
+    .toc .sub { padding-left: 16px; list-style: disc; }
+    .toc .sub li { margin: 4px 0; }
+    .toc .sub a  { color: var(--text); font-size: 0.9rem; }
+
+    /* ── Section headings ─────────────────────────────── */
+    h2.section {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 48px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2.section .num {
+      background: linear-gradient(135deg, var(--blue-start), var(--blue-end));
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+    h3 { font-size: 1.05rem; font-weight: 600; color: var(--primary); margin: 24px 0 10px; }
+
+    /* ── Prose ────────────────────────────────────────── */
+    p { margin-bottom: 12px; color: var(--text); }
+    ul, ol { padding-left: 22px; margin-bottom: 12px; }
+    li { margin: 4px 0; }
+    strong { color: #fff; }
+
+    /* ── Info cards ───────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin-bottom: 16px;
+    }
+    .card.green  { border-left: 4px solid var(--green);  }
+    .card.yellow { border-left: 4px solid var(--yellow); }
+    .card.red    { border-left: 4px solid var(--red);    }
+    .card.blue   { border-left: 4px solid var(--blue-end); }
+    .card-title { font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .card.green  .card-title { color: var(--green);  }
+    .card.yellow .card-title { color: var(--yellow); }
+    .card.red    .card-title { color: var(--red);    }
+    .card.blue   .card-title { color: var(--blue-end); }
+
+    /* ── Code blocks ──────────────────────────────────── */
+    .code-block {
+      position: relative;
+      margin: 12px 0 20px;
+    }
+    .shell-label + .code-block { margin-top: 6px; }
+    pre {
+      background: #060e20;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      padding-right: 48px;
+      overflow-x: auto;
+      margin: 0;
+      font-size: 0.82rem;
+      line-height: 1.6;
+    }
+    code { font-family: 'Consolas', 'Menlo', monospace; color: #93c5fd; }
+    pre code { color: #c7d2fe; }
+    .cm  { color: var(--muted); }      /* comment */
+    .kw  { color: #f0abfc; }           /* keyword */
+    .str { color: var(--green); }      /* string  */
+    .num { color: var(--yellow); }     /* number  */
+    .shell-label {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 4px 0 0;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface-hi);
+      color: var(--muted);
+      cursor: pointer;
+      transition: color .15s, border-color .15s, background .15s;
+    }
+    .copy-btn:hover {
+      color: var(--primary);
+      border-color: rgba(180,197,255,0.35);
+      background: #2a3350;
+    }
+    .copy-btn:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+    .copy-btn svg { width: 15px; height: 15px; display: block; }
+    .copy-btn.copied {
+      color: var(--green);
+      border-color: rgba(74,222,128,0.4);
+    }
+
+    /* ── Comparison table ─────────────────────────────── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      font-size: 0.88rem;
+    }
+    thead th {
+      background: var(--surface-hi);
+      color: var(--primary);
+      font-weight: 600;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      vertical-align: top;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:nth-child(even) td { background: var(--surface-mid); }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-dev  { background: rgba(96,165,250,0.15); color: var(--blue-end);  }
+    .badge-prod { background: rgba(74,222,128,0.15); color: var(--green);     }
+    .badge-no   { background: rgba(248,113,113,0.15); color: var(--red);      }
+    .badge-yes  { background: rgba(74,222,128,0.15);  color: var(--green);    }
+
+    /* ── Step list ────────────────────────────────────── */
+    .steps { counter-reset: step; list-style: none; padding: 0; }
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+    .steps li::before {
+      content: counter(step);
+      flex-shrink: 0;
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--blue-start), var(--blue-end));
+      color: #fff;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 0.8rem;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 2px;
+    }
+    .steps li .content { flex: 1; }
+    .steps li .content strong { display: block; margin-bottom: 4px; }
+
+    /* ── NS box ───────────────────────────────────────── */
+    .ns-box {
+      background: #060e20;
+      border: 1px solid var(--blue-end);
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin: 12px 0;
+    }
+    .ns-box p { color: var(--muted); font-size: 0.8rem; margin-bottom: 10px; }
+    .ns-entry {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0;
+    }
+    .ns-dot {
+      width: 8px; height: 8px;
+      background: var(--blue-end);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .ns-val { font-family: monospace; font-size: 0.9rem; color: #93c5fd; }
+
+    /* ── Output preview ───────────────────────────────── */
+    .output-block {
+      background: #060e20;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      margin: 12px 0 20px;
+      font-family: monospace;
+      font-size: 0.82rem;
+      line-height: 1.8;
+    }
+    .out-key   { color: #f0abfc; }
+    .out-eq    { color: var(--muted); }
+    .out-str   { color: var(--green); }
+    .out-list  { color: #93c5fd; }
+
+    /* ── Footer ───────────────────────────────────────── */
+    .doc-footer {
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* ── Print styles ─────────────────────────────────── */
+    @media print {
+      @page { margin: 18mm 15mm; size: A4; }
+      body  { background: #fff; color: #111; font-size: 12pt; }
+      :root {
+        --bg:          #fff;
+        --surface:     #f5f5f5;
+        --surface-mid: #f0f0f0;
+        --surface-hi:  #e8e8e8;
+        --border:      #d1d5db;
+        --text:        #111827;
+        --muted:       #6b7280;
+        --primary:     #1d4ed8;
+      }
+      .cover {
+        background: linear-gradient(135deg, #1e40af, #3b82f6) !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      pre, .ns-box, .output-block {
+        background: #f8fafc !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      pre code, .ns-val { color: #1d4ed8 !important; }
+      .badge-dev  { background: #dbeafe !important; color: #1d4ed8 !important; }
+      .badge-prod { background: #dcfce7 !important; color: #15803d !important; }
+      .badge-no   { background: #fee2e2 !important; color: #dc2626 !important; }
+      .badge-yes  { background: #dcfce7 !important; color: #15803d !important; }
+      h2.section  { color: #111 !important; }
+      h3          { color: #1d4ed8 !important; }
+      .toc { page-break-after: always; }
+      h2.section  { page-break-before: auto; }
+      pre, table, .card { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══ COVER ══════════════════════════════════════════════ -->
+  <div class="cover">
+    <div class="cover-logo">
+      <div class="cover-logo-icon">⚡</div>
+      <span class="cover-logo-name">AtaqTech</span>
+    </div>
+    <h1>Landing Page<br/>Deployment Guide</h1>
+    <p>Step-by-step guide to deploy the static website on AWS, configure custom domains, and understand the differences between dev and prod environments.</p>
+    <div class="cover-meta">
+      <div class="cover-meta-item"><strong>Stack</strong>S3 + CloudFront + ACM + Route 53</div>
+      <div class="cover-meta-item"><strong>IaC</strong>Terraform ≥ 1.6</div>
+      <div class="cover-meta-item"><strong>Primary region</strong>us-east-1</div>
+      <div class="cover-meta-item"><strong>Version</strong>1.0 — Jul 2026</div>
+    </div>
+  </div>
+
+  <!-- ══ TOC ════════════════════════════════════════════════ -->
+  <div class="toc">
+    <h2>Table of Contents</h2>
+    <ol>
+      <li><a href="#prerequisites">Prerequisites</a></li>
+      <li><a href="#project-structure">Project Structure</a></li>
+      <li><a href="#dev-deployment">Dev Deployment (quick start)</a>
+        <ul class="sub">
+          <li><a href="#dev-init">Initialize Terraform</a></li>
+          <li><a href="#dev-apply">Plan &amp; Apply</a></li>
+          <li><a href="#dev-upload">Upload HTML files</a></li>
+        </ul>
+      </li>
+      <li><a href="#prod-deployment">Prod Deployment (custom domain)</a>
+        <ul class="sub">
+          <li><a href="#prod-prerequisites">Domain prerequisites</a></li>
+          <li><a href="#prod-configure">Configure prod.tfvars</a></li>
+          <li><a href="#prod-apply">Plan &amp; Apply</a></li>
+          <li><a href="#prod-upload">Upload HTML files</a></li>
+        </ul>
+      </li>
+      <li><a href="#nameservers">Configuring Nameservers at your Registrar</a></li>
+      <li><a href="#differences">Dev vs Prod — Key Differences</a></li>
+      <li><a href="#cache">Cache Invalidation</a></li>
+      <li><a href="#destroy">Destroying the Infrastructure</a></li>
+    </ol>
+  </div>
+
+  <!-- ══ 1. PREREQUISITES ═══════════════════════════════════ -->
+  <h2 class="section" id="prerequisites"><span class="num">1</span>Prerequisites</h2>
+  <p>Before running any Terraform command, make sure the following tools and accesses are in place.</p>
+
+  <h3>Required tools</h3>
+  <ul>
+    <li><strong>Terraform ≥ 1.6</strong> — <code>terraform -version</code></li>
+    <li><strong>AWS CLI v2</strong> — <code>aws --version</code></li>
+    <li><strong>AWS credentials configured</strong> — <code>aws configure</code> or environment variables</li>
+  </ul>
+
+  <h3>Required AWS permissions</h3>
+  <p>The IAM user or role running Terraform needs permissions for: <strong>S3</strong>, <strong>CloudFront</strong>, <strong>ACM</strong> (us-east-1), <strong>Route 53</strong>, and <strong>KMS</strong> (if re-enabled).</p>
+
+  <h3>S3 remote state bucket (backend.tf)</h3>
+  <p>Before the first <code>terraform init</code>, edit <code>backend.tf</code> and replace the placeholders:</p>
+<pre><code><span class="kw">terraform</span> {
+  backend <span class="str">"s3"</span> {
+    bucket  = <span class="str">"YOUR-TFSTATE-BUCKET-NAME"</span>   <span class="cm"># must exist beforehand</span>
+    key     = <span class="str">"static-website/terraform.tfstate"</span>
+    region  = <span class="str">"us-east-1"</span>
+    encrypt = <span class="kw">true</span>
+  }
+}</code></pre>
+
+  <div class="card yellow">
+    <div class="card-title">⚠ Important</div>
+    Create the S3 state bucket manually (or with a bootstrap script) <strong>before</strong> running <code>terraform init</code>. Terraform cannot create its own backend. State locking (DynamoDB) is not used — avoid running concurrent <code>terraform apply</code> from multiple machines.
+  </div>
+
+  <!-- ══ 2. PROJECT STRUCTURE ═══════════════════════════════ -->
+  <h2 class="section" id="project-structure"><span class="num">2</span>Project Structure</h2>
+<pre><code>landing-page-automation/
+├── backend.tf              <span class="cm"># S3 remote state configuration</span>
+├── main.tf                 <span class="cm"># root module — wires all child modules</span>
+├── variables.tf            <span class="cm"># root input variables</span>
+├── outputs.tf              <span class="cm"># all Terraform outputs</span>
+├── versions.tf             <span class="cm"># provider + Terraform version pins</span>
+├── index.html              <span class="cm"># landing page HTML</span>
+├── error.html              <span class="cm"># custom 404 page</span>
+├── envs/
+│   ├── dev.tfvars          <span class="cm"># dev environment values</span>
+│   └── prod.tfvars         <span class="cm"># prod environment values (custom domain)</span>
+└── modules/
+    ├── static-website/     <span class="cm"># S3 bucket + CloudFront distribution</span>
+    ├── acm/                <span class="cm"># ACM certificate + DNS validation</span>
+    └── route53/            <span class="cm"># A/AAAA alias records</span></code></pre>
+
+  <!-- ══ 3. DEV DEPLOYMENT ══════════════════════════════════ -->
+  <h2 class="section" id="dev-deployment"><span class="num">3</span>Dev Deployment</h2>
+  <p>Dev uses the default <code>*.cloudfront.net</code> certificate — <strong>no custom domain needed</strong>. It is the fastest way to get the site live.</p>
+
+  <h3 id="dev-init">Step 1 — Initialize Terraform</h3>
+<pre><code>terraform init</code></pre>
+  <p>Downloads the AWS provider and configures the S3 backend. Run this once per machine.</p>
+
+  <h3 id="dev-apply">Step 2 — Plan &amp; Apply</h3>
+<pre><code><span class="cm"># Preview what will be created (no changes made)</span>
+terraform plan -var-file=<span class="str">"envs/dev.tfvars"</span>
+
+<span class="cm"># Create all resources</span>
+terraform apply -var-file=<span class="str">"envs/dev.tfvars"</span></code></pre>
+
+  <p>Terraform will create: <strong>1 S3 bucket</strong> (content), <strong>1 CloudFront distribution</strong>. Takes ~3 minutes.</p>
+
+  <h3 id="dev-upload">Step 3 — Upload HTML files</h3>
+  <p class="shell-label">Bash / macOS / Linux</p>
+<pre><code><span class="cm"># Get the bucket name from outputs</span>
+BUCKET=$(terraform output -raw content_bucket_name)
+
+<span class="cm"># Upload both pages</span>
+aws s3 cp index.html s3://$BUCKET/index.html
+aws s3 cp error.html s3://$BUCKET/error.html</code></pre>
+
+  <p class="shell-label">PowerShell (Windows)</p>
+<pre><code><span class="cm"># Get the bucket name from outputs</span>
+$BUCKET = terraform output -raw content_bucket_name
+
+<span class="cm"># Upload both pages</span>
+aws s3 cp index.html <span class="str">"s3://$BUCKET/index.html"</span>
+aws s3 cp error.html <span class="str">"s3://$BUCKET/error.html"</span></code></pre>
+
+  <h3>Step 4 — Open the website</h3>
+<pre><code>terraform output website_url
+<span class="cm"># → https://d1234abcd.cloudfront.net</span></code></pre>
+
+  <div class="card green">
+    <div class="card-title">✓ Dev is live</div>
+    The site is accessible at the CloudFront URL. No domain registrar changes needed.
+  </div>
+
+  <!-- ══ 4. PROD DEPLOYMENT ═════════════════════════════════ -->
+  <h2 class="section" id="prod-deployment"><span class="num">4</span>Prod Deployment (Custom Domain)</h2>
+
+  <h3 id="prod-prerequisites">Domain prerequisites</h3>
+  <ol class="steps">
+    <li>
+      <div class="content">
+        <strong>Register your domain</strong>
+        Buy a domain at any registrar (GoDaddy, Namecheap, Registro.br, etc.) or directly in AWS Route 53 Registrar.
+      </div>
+    </li>
+    <li>
+      <div class="content">
+        <strong>Create a Route 53 Hosted Zone</strong>
+        In the AWS Console → Route 53 → Hosted Zones → Create hosted zone.<br/>
+        Enter your domain name (e.g. <code>ataqtech.com</code>) and leave type as <em>Public</em>.
+      </div>
+    </li>
+    <li>
+      <div class="content">
+        <strong>Note the 4 NS records</strong>
+        After creation, AWS shows 4 nameserver values. You will need these in the next section.
+      </div>
+    </li>
+    <li>
+      <div class="content">
+        <strong>Update nameservers at your registrar</strong>
+        See <a href="#nameservers">Section 5</a> for the step-by-step registrar guide.
+      </div>
+    </li>
+  </ol>
+
+  <h3 id="prod-configure">Configure prod.tfvars</h3>
+  <p>Open <code>envs/prod.tfvars</code> and replace the domain placeholder:</p>
+<pre><code>domain_name = <span class="str">"ataqtech.com"</span>   <span class="cm"># ← your real domain here</span></code></pre>
+
+  <h3 id="prod-apply">Plan &amp; Apply</h3>
+<pre><code>terraform plan  -var-file=<span class="str">"envs/prod.tfvars"</span>
+terraform apply -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
+
+  <p>Terraform will additionally create: <strong>ACM certificate</strong> (us-east-1), <strong>Route 53 DNS validation CNAMEs</strong>, <strong>Route 53 A + AAAA alias records</strong>. Takes ~10–15 minutes (ACM validation waits for DNS to propagate).</p>
+
+  <div class="card blue">
+    <div class="card-title">ℹ ACM validation wait</div>
+    Terraform blocks at the <code>aws_acm_certificate_validation</code> resource until AWS confirms the DNS CNAME is reachable. If it times out, nameserver propagation is not complete yet — wait and re-run <code>terraform apply</code>.
+  </div>
+
+  <h3 id="prod-upload">Upload HTML files</h3>
+  <p class="shell-label">Bash / macOS / Linux</p>
+<pre><code>BUCKET=$(terraform output -raw content_bucket_name)
+
+aws s3 cp index.html s3://$BUCKET/index.html
+aws s3 cp error.html s3://$BUCKET/error.html</code></pre>
+
+  <p class="shell-label">PowerShell (Windows)</p>
+<pre><code>$BUCKET = terraform output -raw content_bucket_name
+
+aws s3 cp index.html <span class="str">"s3://$BUCKET/index.html"</span>
+aws s3 cp error.html <span class="str">"s3://$BUCKET/error.html"</span></code></pre>
+
+  <h3>Check outputs</h3>
+  <p>After a successful apply, <code>terraform output</code> prints:</p>
+  <div class="output-block">
+    <span class="out-key">apex_url</span>               <span class="out-eq">=</span> <span class="out-str">"https://ataqtech.com"</span><br/>
+    <span class="out-key">www_url</span>                <span class="out-eq">=</span> <span class="out-str">"https://www.ataqtech.com"</span><br/>
+    <span class="out-key">cloudfront_cdn_endpoint</span><span class="out-eq">=</span> <span class="out-str">"d1234abcd.cloudfront.net"</span><br/>
+    <span class="out-key">certificate_arn</span>        <span class="out-eq">=</span> <span class="out-str">"arn:aws:acm:us-east-1:..."</span><br/>
+    <span class="out-key">content_bucket_name</span>    <span class="out-eq">=</span> <span class="out-str">"landing-page-prod-static-website-content"</span><br/>
+    <span class="out-key">route53_nameservers</span>    <span class="out-eq">=</span> <span class="out-list">[</span><br/>
+    &nbsp;&nbsp;<span class="out-str">"ns-8.awsdns-47.net"</span>,<br/>
+    &nbsp;&nbsp;<span class="out-str">"ns-1.awsdns-60.org"</span>,<br/>
+    &nbsp;&nbsp;<span class="out-str">"ns-1.awsdns-57.co.uk"</span>,<br/>
+    &nbsp;&nbsp;<span class="out-str">"ns-1.awsdns-19.com"</span>,<br/>
+    <span class="out-list">]</span>
+  </div>
+
+  <!-- ══ 5. NAMESERVERS ═════════════════════════════════════ -->
+  <h2 class="section" id="nameservers"><span class="num">5</span>Configuring Nameservers at Your Registrar</h2>
+  <p>This is a one-time manual step done <strong>outside of Terraform</strong> — in your domain registrar's control panel.</p>
+
+  <h3>Where to find the nameserver values</h3>
+  <p>After <code>terraform apply</code>, run:</p>
+<pre><code>terraform output route53_nameservers</code></pre>
+  <p>Or find them in the AWS Console → Route 53 → Hosted Zones → your domain → NS record.</p>
+
+  <div class="ns-box">
+    <p>Example nameservers (yours will be different):</p>
+    <div class="ns-entry"><div class="ns-dot"></div><span class="ns-val">ns-8.awsdns-47.net</span></div>
+    <div class="ns-entry"><div class="ns-dot"></div><span class="ns-val">ns-1.awsdns-60.org</span></div>
+    <div class="ns-entry"><div class="ns-dot"></div><span class="ns-val">ns-1.awsdns-57.co.uk</span></div>
+    <div class="ns-entry"><div class="ns-dot"></div><span class="ns-val">ns-1.awsdns-19.com</span></div>
+  </div>
+
+  <div class="card yellow">
+    <div class="card-title">⚠ Remove trailing dots</div>
+    Some registrars don't accept the trailing period (<code>.</code>). Remove it if the form rejects the values.
+  </div>
+
+  <h3>Step-by-step per registrar</h3>
+  <table>
+    <thead>
+      <tr><th>Registrar</th><th>Path to Nameserver Settings</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>GoDaddy</strong></td><td>My Products → DNS → Nameservers → Change → Enter my own nameservers</td></tr>
+      <tr><td><strong>Namecheap</strong></td><td>Domain List → Manage → Nameservers → Custom DNS</td></tr>
+      <tr><td><strong>Registro.br</strong></td><td>Domínios → seu domínio → Servidores DNS → Configurar</td></tr>
+      <tr><td><strong>Cloudflare Registrar</strong></td><td>Domain Registration → your domain → Nameservers</td></tr>
+      <tr><td><strong>Google / Squarespace</strong></td><td>DNS → Custom name servers → Use custom name servers</td></tr>
+      <tr><td><strong>AWS Route 53 Registrar</strong></td><td>Not needed — hosted zone is already authoritative</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Verify propagation</h3>
+  <p>Propagation takes <strong>5 minutes to 48 hours</strong>. Check with a public DNS tool:</p>
+  <ul>
+    <li><strong>dnschecker.org</strong> — search your domain, select record type NS</li>
+    <li><strong>whatsmydns.net</strong> — shows results per region globally</li>
+  </ul>
+  <p>When all regions show your Route 53 NS values, ACM validation will complete automatically on the next <code>terraform apply</code> (or it already completed if propagation happened during apply).</p>
+
+  <!-- ══ 6. DEV VS PROD ═════════════════════════════════════ -->
+  <h2 class="section" id="differences"><span class="num">6</span>Dev vs Prod — Key Differences</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th><span class="badge badge-dev">dev</span></th>
+        <th><span class="badge badge-prod">prod</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Custom domain</strong></td>
+        <td><span class="badge badge-no">No</span> — uses <code>*.cloudfront.net</code></td>
+        <td><span class="badge badge-yes">Yes</span> — your domain via ACM + Route 53</td>
+      </tr>
+      <tr>
+        <td><strong>ACM Certificate</strong></td>
+        <td><span class="badge badge-no">No</span> — default CloudFront cert</td>
+        <td><span class="badge badge-yes">Yes</span> — TLS 1.2+ with your domain</td>
+      </tr>
+      <tr>
+        <td><strong>Route 53 records</strong></td>
+        <td><span class="badge badge-no">Not created</span></td>
+        <td><span class="badge badge-yes">A + AAAA</span> for apex and www</td>
+      </tr>
+      <tr>
+        <td><strong>S3 force_destroy</strong></td>
+        <td><span class="badge badge-yes">true</span> — easy cleanup</td>
+        <td><span class="badge badge-no">false</span> — prevents accidental deletion</td>
+      </tr>
+      <tr>
+        <td><strong>Access logs</strong></td>
+        <td><span class="badge badge-no">Not enabled</span></td>
+        <td><span class="badge badge-no">Not enabled</span></td>
+      </tr>
+      <tr>
+        <td><strong>CloudFront price class</strong></td>
+        <td><code>PriceClass_100</code> (US + EU)</td>
+        <td><code>PriceClass_100</code> (US + EU)</td>
+      </tr>
+      <tr>
+        <td><strong>Encryption at rest</strong></td>
+        <td>SSE-S3 (AES-256, free)</td>
+        <td>SSE-S3 (AES-256, free)</td>
+      </tr>
+      <tr>
+        <td><strong>Encryption in transit</strong></td>
+        <td>HTTPS via CloudFront</td>
+        <td>HTTPS via CloudFront + TLS 1.2 min</td>
+      </tr>
+      <tr>
+        <td><strong>Approximate monthly cost</strong></td>
+        <td>~$0 (within free tier)</td>
+        <td>~$0.50 (Route 53 hosted zone $0.50/mo)</td>
+      </tr>
+      <tr>
+        <td><strong>Tfvars file</strong></td>
+        <td><code>envs/dev.tfvars</code></td>
+        <td><code>envs/prod.tfvars</code></td>
+      </tr>
+      <tr>
+        <td><strong>Environment tag</strong></td>
+        <td><code>Environment = "dev"</code></td>
+        <td><code>Environment = "prod"</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ══ 7. CACHE INVALIDATION ══════════════════════════════ -->
+  <h2 class="section" id="cache"><span class="num">7</span>Cache Invalidation</h2>
+  <p>After uploading new HTML files, CloudFront may serve the old cached version for up to 24 hours (the default TTL). Run a cache invalidation to force immediate refresh:</p>
+
+  <p class="shell-label">Bash / macOS / Linux</p>
+<pre><code>DIST_ID=$(terraform output -raw cloudfront_distribution_id)
+
+<span class="cm"># Invalidate all files</span>
+aws cloudfront create-invalidation \
+  --distribution-id $DIST_ID \
+  --paths <span class="str">"/*"</span>
+
+<span class="cm"># Invalidate a specific file only</span>
+aws cloudfront create-invalidation \
+  --distribution-id $DIST_ID \
+  --paths <span class="str">"/index.html"</span></code></pre>
+
+  <p class="shell-label">PowerShell (Windows)</p>
+<pre><code>$DIST_ID = terraform output -raw cloudfront_distribution_id
+
+<span class="cm"># Invalidate all files</span>
+aws cloudfront create-invalidation `
+  --distribution-id $DIST_ID `
+  --paths <span class="str">"/*"</span>
+
+<span class="cm"># Invalidate a specific file only</span>
+aws cloudfront create-invalidation `
+  --distribution-id $DIST_ID `
+  --paths <span class="str">"/index.html"</span></code></pre>
+
+  <div class="card blue">
+    <div class="card-title">ℹ Cost note</div>
+    The first 1,000 invalidation paths per month are free. Each additional 1,000 paths costs $0.005. For dev, set <code>cloudfront_default_ttl = 0</code> in <code>dev.tfvars</code> to disable caching entirely.
+  </div>
+
+  <!-- ══ 8. DESTROY ═════════════════════════════════════════ -->
+  <h2 class="section" id="destroy"><span class="num">8</span>Destroying the Infrastructure</h2>
+
+  <div class="card red">
+    <div class="card-title">⛔ Warning — irreversible</div>
+    This permanently deletes the S3 content bucket and its contents, the CloudFront distribution, ACM certificate, and Route 53 records. In prod, <code>force_destroy = false</code> means S3 will refuse deletion if the bucket is not empty — empty it first.
+  </div>
+
+  <h3>Dev</h3>
+<pre><code>terraform destroy -var-file=<span class="str">"envs/dev.tfvars"</span></code></pre>
+
+  <h3>Prod</h3>
+  <p class="shell-label">Bash / macOS / Linux</p>
+<pre><code><span class="cm"># Empty the bucket first (prod has force_destroy = false)</span>
+BUCKET=$(terraform output -raw content_bucket_name)
+aws s3 rm s3://$BUCKET --recursive
+
+<span class="cm"># Then destroy</span>
+terraform destroy -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
+
+  <p class="shell-label">PowerShell (Windows)</p>
+<pre><code><span class="cm"># Empty the bucket first (prod has force_destroy = false)</span>
+$BUCKET = terraform output -raw content_bucket_name
+aws s3 rm <span class="str">"s3://$BUCKET"</span> --recursive
+
+<span class="cm"># Then destroy</span>
+terraform destroy -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
+
+  <!-- ══ FOOTER ═════════════════════════════════════════════ -->
+  <div class="doc-footer">
+    <span>AtaqTech — Deployment Guide v1.0</span>
+    <span>Generated Jul 2026 · Terraform ≥ 1.6 · AWS Provider ~&gt; 5.0</span>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  var iconCopy =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  var iconCheck =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+
+  document.querySelectorAll("pre").forEach(function (pre) {
+    if (pre.parentElement && pre.parentElement.classList.contains("code-block")) return;
+
+    var wrap = document.createElement("div");
+    wrap.className = "code-block";
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(pre);
+
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "copy-btn";
+    btn.title = "Copy";
+    btn.setAttribute("aria-label", "Copy code");
+    btn.innerHTML = iconCopy;
+    wrap.appendChild(btn);
+
+    btn.addEventListener("click", function () {
+      var text = (pre.innerText || pre.textContent || "").replace(/\n$/, "");
+      var done = function () {
+        btn.classList.add("copied");
+        btn.innerHTML = iconCheck;
+        btn.title = "Copied";
+        setTimeout(function () {
+          btn.classList.remove("copied");
+          btn.innerHTML = iconCopy;
+          btn.title = "Copy";
+        }, 1600);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done).catch(function () {
+          fallbackCopy(text, done);
+        });
+      } else {
+        fallbackCopy(text, done);
+      }
+    });
+  });
+
+  function fallbackCopy(text, done) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy");
+      done();
+    } finally {
+      document.body.removeChild(ta);
+    }
+  }
+})();
+</script>
+</body>
+</html>
