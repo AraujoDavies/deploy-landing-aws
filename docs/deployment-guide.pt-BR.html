@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AtaqTech — Deployment Guide</title>
+  <title>AtaqTech — Guia de Deploy</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     /* ── Reset & base ─────────────────────────────────── */
@@ -357,64 +357,64 @@
       <div class="cover-logo-icon">⚡</div>
       <span class="cover-logo-name">AtaqTech</span>
     </div>
-    <h1>Landing Page<br/>Deployment Guide</h1>
-    <p>Step-by-step guide to deploy the static website on AWS, configure custom domains, and understand the differences between dev and prod environments.</p>
+    <h1>Landing Page<br/>Guia de Deploy</h1>
+    <p>Guia passo a passo para publicar o site estático na AWS, configurar domínio personalizado e entender as diferenças entre os ambientes de desenvolvimento e produção.</p>
     <div class="cover-meta">
       <div class="cover-meta-item"><strong>Stack</strong>S3 + CloudFront + ACM + Route 53</div>
       <div class="cover-meta-item"><strong>IaC</strong>Terraform ≥ 1.6</div>
-      <div class="cover-meta-item"><strong>Primary region</strong>us-east-1</div>
-      <div class="cover-meta-item"><strong>Version</strong>1.0 — Jul 2026</div>
+      <div class="cover-meta-item"><strong>Região principal</strong>us-east-1</div>
+      <div class="cover-meta-item"><strong>Versão</strong>1.0 — Jul 2026</div>
     </div>
   </div>
 
   <!-- ══ TOC ════════════════════════════════════════════════ -->
   <div class="toc">
-    <h2>Table of Contents</h2>
+    <h2>Sumário</h2>
     <ol>
-      <li><a href="#prerequisites">Prerequisites</a></li>
-      <li><a href="#project-structure">Project Structure</a></li>
-      <li><a href="#dev-deployment">Dev Deployment (quick start)</a>
+      <li><a href="#prerequisites">Pré-requisitos</a></li>
+      <li><a href="#project-structure">Estrutura do Projeto</a></li>
+      <li><a href="#dev-deployment">Deploy em Dev (início rápido)</a>
         <ul class="sub">
-          <li><a href="#dev-init">Initialize Terraform</a></li>
+          <li><a href="#dev-init">Inicializar o Terraform</a></li>
           <li><a href="#dev-apply">Plan &amp; Apply</a></li>
-          <li><a href="#dev-upload">Upload HTML files</a></li>
+          <li><a href="#dev-upload">Enviar arquivos HTML</a></li>
         </ul>
       </li>
-      <li><a href="#prod-deployment">Prod Deployment (custom domain)</a>
+      <li><a href="#prod-deployment">Deploy em Prod (domínio personalizado)</a>
         <ul class="sub">
-          <li><a href="#prod-prerequisites">Domain prerequisites</a></li>
-          <li><a href="#prod-configure">Configure prod.tfvars</a></li>
+          <li><a href="#prod-prerequisites">Pré-requisitos do domínio</a></li>
+          <li><a href="#prod-configure">Configurar prod.tfvars</a></li>
           <li><a href="#prod-apply">Plan &amp; Apply</a></li>
-          <li><a href="#prod-upload">Upload HTML files</a></li>
+          <li><a href="#prod-upload">Enviar arquivos HTML</a></li>
         </ul>
       </li>
-      <li><a href="#nameservers">Configuring Nameservers at your Registrar</a></li>
-      <li><a href="#differences">Dev vs Prod — Key Differences</a></li>
-      <li><a href="#estimated-cost">Estimated Cost</a></li>
-      <li><a href="#cache">Cache Invalidation</a></li>
-      <li><a href="#destroy">Destroying the Infrastructure</a></li>
+      <li><a href="#nameservers">Configurar Nameservers no Registrador</a></li>
+      <li><a href="#differences">Dev vs Prod — Principais Diferenças</a></li>
+      <li><a href="#estimated-cost">Custo Estimado</a></li>
+      <li><a href="#cache">Invalidação de Cache</a></li>
+      <li><a href="#destroy">Destruir a Infraestrutura</a></li>
     </ol>
   </div>
 
   <!-- ══ 1. PREREQUISITES ═══════════════════════════════════ -->
-  <h2 class="section" id="prerequisites"><span class="num">1</span>Prerequisites</h2>
-  <p>Before running any Terraform command, make sure the following tools and accesses are in place.</p>
+  <h2 class="section" id="prerequisites"><span class="num">1</span>Pré-requisitos</h2>
+  <p>Antes de executar qualquer comando Terraform, confira se as ferramentas e os acessos abaixo estão prontos.</p>
 
-  <h3>Required tools</h3>
+  <h3>Ferramentas necessárias</h3>
   <ul>
     <li><strong>Terraform ≥ 1.6</strong> — <code>terraform -version</code></li>
     <li><strong>AWS CLI v2</strong> — <code>aws --version</code></li>
-    <li><strong>AWS credentials configured</strong> — <code>aws configure</code> or environment variables</li>
+    <li><strong>Credenciais AWS configuradas</strong> — <code>aws configure</code> ou variáveis de ambiente</li>
   </ul>
 
-  <h3>Required AWS permissions</h3>
-  <p>The IAM user or role running Terraform needs permissions for: <strong>S3</strong>, <strong>CloudFront</strong>, <strong>ACM</strong> (us-east-1), <strong>Route 53</strong>, and <strong>KMS</strong> (if re-enabled).</p>
+  <h3>Permissões AWS necessárias</h3>
+  <p>O usuário ou role IAM que executa o Terraform precisa de permissões para: <strong>S3</strong>, <strong>CloudFront</strong>, <strong>ACM</strong> (us-east-1), <strong>Route 53</strong> e <strong>KMS</strong> (se for reativado).</p>
 
-  <h3>S3 remote state bucket (backend.tf)</h3>
-  <p>Before the first <code>terraform init</code>, edit <code>backend.tf</code> and replace the placeholders:</p>
+  <h3>Bucket S3 do remote state (backend.tf)</h3>
+  <p>Antes do primeiro <code>terraform init</code>, edite o <code>backend.tf</code> e substitua os placeholders:</p>
 <pre><code><span class="kw">terraform</span> {
   backend <span class="str">"s3"</span> {
-    bucket  = <span class="str">"YOUR-TFSTATE-BUCKET-NAME"</span>   <span class="cm"># must exist beforehand</span>
+    bucket  = <span class="str">"YOUR-TFSTATE-BUCKET-NAME"</span>   <span class="cm"># deve existir previamente</span>
     key     = <span class="str">"static-website/terraform.tfstate"</span>
     region  = <span class="str">"us-east-1"</span>
     encrypt = <span class="kw">true</span>
@@ -422,132 +422,132 @@
 }</code></pre>
 
   <div class="card yellow">
-    <div class="card-title">⚠ Important</div>
-    Create the S3 state bucket manually (or with a bootstrap script) <strong>before</strong> running <code>terraform init</code>. Terraform cannot create its own backend. State locking (DynamoDB) is not used — avoid running concurrent <code>terraform apply</code> from multiple machines.
+    <div class="card-title">⚠ Importante</div>
+    Crie o bucket S3 de state manualmente (ou com um script de bootstrap) <strong>antes</strong> de rodar <code>terraform init</code>. O Terraform não consegue criar o próprio backend. Lock de state (DynamoDB) não é usado — evite executar <code>terraform apply</code> em paralelo a partir de várias máquinas.
   </div>
 
   <!-- ══ 2. PROJECT STRUCTURE ═══════════════════════════════ -->
-  <h2 class="section" id="project-structure"><span class="num">2</span>Project Structure</h2>
+  <h2 class="section" id="project-structure"><span class="num">2</span>Estrutura do Projeto</h2>
 <pre><code>landing-page-automation/
-├── backend.tf              <span class="cm"># S3 remote state configuration</span>
-├── main.tf                 <span class="cm"># root module — wires all child modules</span>
-├── variables.tf            <span class="cm"># root input variables</span>
-├── outputs.tf              <span class="cm"># all Terraform outputs</span>
-├── versions.tf             <span class="cm"># provider + Terraform version pins</span>
-├── index.html              <span class="cm"># landing page HTML</span>
-├── error.html              <span class="cm"># custom 404 page</span>
+├── backend.tf              <span class="cm"># configuração do remote state no S3</span>
+├── main.tf                 <span class="cm"># módulo root — conecta os módulos filhos</span>
+├── variables.tf            <span class="cm"># variáveis de entrada do root</span>
+├── outputs.tf              <span class="cm"># todos os outputs do Terraform</span>
+├── versions.tf             <span class="cm"># pins de versão do provider + Terraform</span>
+├── index.html              <span class="cm"># HTML da landing page</span>
+├── error.html              <span class="cm"># página 404 personalizada</span>
 ├── envs/
-│   ├── dev.tfvars          <span class="cm"># dev environment values</span>
-│   └── prod.tfvars         <span class="cm"># prod environment values (custom domain)</span>
+│   ├── dev.tfvars          <span class="cm"># valores do ambiente de desenvolvimento</span>
+│   └── prod.tfvars         <span class="cm"># valores do ambiente de produção (domínio custom)</span>
 └── modules/
-    ├── static-website/     <span class="cm"># S3 bucket + CloudFront distribution</span>
-    ├── acm/                <span class="cm"># ACM certificate + DNS validation</span>
-    └── route53/            <span class="cm"># A/AAAA alias records</span></code></pre>
+    ├── static-website/     <span class="cm"># bucket S3 + distribuição CloudFront</span>
+    ├── acm/                <span class="cm"># certificado ACM + validação DNS</span>
+    └── route53/            <span class="cm"># registros alias A/AAAA</span></code></pre>
 
   <!-- ══ 3. DEV DEPLOYMENT ══════════════════════════════════ -->
-  <h2 class="section" id="dev-deployment"><span class="num">3</span>Dev Deployment</h2>
-  <p>Dev uses the default <code>*.cloudfront.net</code> certificate — <strong>no custom domain needed</strong>. It is the fastest way to get the site live.</p>
+  <h2 class="section" id="dev-deployment"><span class="num">3</span>Deploy em Dev</h2>
+  <p>O ambiente de desenvolvimento usa o certificado padrão <code>*.cloudfront.net</code> — <strong>não é necessário domínio personalizado</strong>. É a forma mais rápida de colocar o site no ar.</p>
 
-  <h3 id="dev-init">Step 1 — Initialize Terraform</h3>
+  <h3 id="dev-init">Passo 1 — Inicializar o Terraform</h3>
 <pre><code>terraform init</code></pre>
-  <p>Downloads the AWS provider and configures the S3 backend. Run this once per machine.</p>
+  <p>Baixa o provider AWS e configura o backend S3. Execute uma vez por máquina.</p>
 
-  <h3 id="dev-apply">Step 2 — Plan &amp; Apply</h3>
-<pre><code><span class="cm"># Preview what will be created (no changes made)</span>
+  <h3 id="dev-apply">Passo 2 — Plan &amp; Apply</h3>
+<pre><code><span class="cm"># Prévia do que será criado (sem alterações)</span>
 terraform plan -var-file=<span class="str">"envs/dev.tfvars"</span>
 
-<span class="cm"># Create all resources</span>
+<span class="cm"># Cria todos os recursos</span>
 terraform apply -var-file=<span class="str">"envs/dev.tfvars"</span></code></pre>
 
-  <p>Terraform will create: <strong>1 S3 bucket</strong> (content), <strong>1 CloudFront distribution</strong>. Takes ~3 minutes.</p>
+  <p>O Terraform criará: <strong>1 bucket S3</strong> (conteúdo), <strong>1 distribuição CloudFront</strong>. Leva cerca de 3 minutos.</p>
 
-  <h3 id="dev-upload">Step 3 — Upload HTML files</h3>
+  <h3 id="dev-upload">Passo 3 — Enviar arquivos HTML</h3>
   <p class="shell-label">Bash / macOS / Linux</p>
-<pre><code><span class="cm"># Get the bucket name from outputs</span>
+<pre><code><span class="cm"># Obtém o nome do bucket a partir dos outputs</span>
 BUCKET=$(terraform output -raw content_bucket_name)
 
-<span class="cm"># Upload both pages</span>
+<span class="cm"># Envia as duas páginas</span>
 aws s3 cp index.html s3://$BUCKET/index.html
 aws s3 cp error.html s3://$BUCKET/error.html</code></pre>
 
   <p class="shell-label">PowerShell (Windows)</p>
-<pre><code><span class="cm"># Get the bucket name from outputs</span>
+<pre><code><span class="cm"># Obtém o nome do bucket a partir dos outputs</span>
 $BUCKET = terraform output -raw content_bucket_name
 
-<span class="cm"># Upload both pages</span>
+<span class="cm"># Envia as duas páginas</span>
 aws s3 cp index.html <span class="str">"s3://$BUCKET/index.html"</span>
 aws s3 cp error.html <span class="str">"s3://$BUCKET/error.html"</span></code></pre>
 
-  <h3>Step 4 — Open the website</h3>
+  <h3>Passo 4 — Abrir o site</h3>
 <pre><code>terraform output website_url
 <span class="cm"># → https://d1234abcd.cloudfront.net</span></code></pre>
 
   <div class="card green">
-    <div class="card-title">✓ Dev is live</div>
-    The site is accessible at the CloudFront URL. No domain registrar changes needed.
+    <div class="card-title">✓ Dev no ar</div>
+    O site está acessível pela URL do CloudFront. Nenhuma alteração no registrador de domínio é necessária.
   </div>
 
   <!-- ══ 4. PROD DEPLOYMENT ═════════════════════════════════ -->
-  <h2 class="section" id="prod-deployment"><span class="num">4</span>Prod Deployment (Custom Domain)</h2>
+  <h2 class="section" id="prod-deployment"><span class="num">4</span>Deploy em Prod (Domínio Personalizado)</h2>
 
-  <h3 id="prod-prerequisites">Domain prerequisites</h3>
+  <h3 id="prod-prerequisites">Pré-requisitos do domínio</h3>
   <ol class="steps">
     <li>
       <div class="content">
-        <strong>Own your domain</strong>
-        Buy/register a domain at any registrar (GoDaddy, Namecheap, Registro.br, etc.) or AWS Route 53 Registrar. Terraform does <strong>not</strong> purchase the domain — it only creates the DNS hosted zone.
+        <strong>Tenha um domínio próprio</strong>
+        Compre/registre um domínio em qualquer registrador (GoDaddy, Namecheap, Registro.br, etc.) ou no AWS Route 53 Registrar. O Terraform <strong>não</strong> compra o domínio — ele só cria a hosted zone de DNS.
       </div>
     </li>
     <li>
       <div class="content">
-        <strong>Set <code>domain_name</code> in prod.tfvars</strong>
-        Terraform will create the public Route 53 hosted zone automatically on apply.
+        <strong>Defina <code>domain_name</code> no prod.tfvars</strong>
+        O Terraform criará a hosted zone pública no Route 53 automaticamente no apply.
       </div>
     </li>
     <li>
       <div class="content">
-        <strong>Copy the nameservers from Terraform outputs</strong>
-        After the zone is created, run <code>terraform output nameserver_setup_instructions</code> (or <code>route53_nameservers</code>).
+        <strong>Copie os nameservers dos outputs do Terraform</strong>
+        Depois que a zone for criada, execute <code>terraform output nameserver_setup_instructions</code> (ou <code>route53_nameservers</code>).
       </div>
     </li>
     <li>
       <div class="content">
-        <strong>Update nameservers at your registrar</strong>
-        See <a href="#nameservers">Section 5</a> for the step-by-step registrar guide. ACM validation only succeeds after this step propagates.
+        <strong>Atualize os nameservers no registrador</strong>
+        Veja a <a href="#nameservers">Seção 5</a> para o passo a passo por registrador. A validação do ACM só conclui depois que essa alteração propagar.
       </div>
     </li>
   </ol>
 
-  <h3 id="prod-configure">Configure prod.tfvars</h3>
-  <p>Open <code>envs/prod.tfvars</code> and replace the domain placeholder:</p>
-<pre><code>domain_name = <span class="str">"ataqtech.com.br"</span>   <span class="cm"># ← your already-owned domain</span></code></pre>
+  <h3 id="prod-configure">Configurar prod.tfvars</h3>
+  <p>Abra <code>envs/prod.tfvars</code> e substitua o placeholder do domínio:</p>
+<pre><code>domain_name = <span class="str">"ataqtech.com.br"</span>   <span class="cm"># ← domínio que você já possui</span></code></pre>
 
-  <h3 id="prod-apply">Plan &amp; Apply (recommended two-phase)</h3>
-  <p>ACM needs the registrar to use Route 53 nameservers before validation can finish. Create the hosted zone first, update your registrar, then finish the stack:</p>
+  <h3 id="prod-apply">Plan &amp; Apply (duas fases recomendadas)</h3>
+  <p>O ACM precisa que o registrador use os nameservers do Route 53 antes de concluir a validação. Crie a hosted zone primeiro, atualize o registrador e só então finalize o stack:</p>
 
-  <p class="shell-label">Phase 1 — create hosted zone only</p>
+  <p class="shell-label">Fase 1 — criar apenas a hosted zone</p>
 <pre><code>terraform apply -target=<span class="str">"aws_route53_zone.main"</span> -var-file=<span class="str">"envs/prod.tfvars"</span>
 
 terraform output route53_nameservers
 terraform output nameserver_setup_instructions</code></pre>
 
   <div class="card yellow">
-    <div class="card-title">⚠ Update your registrar now</div>
-    Paste the 4 nameservers into your domain provider (see <a href="#nameservers">Section 5</a>). Wait until public DNS tools show the new NS values before Phase 2.
+    <div class="card-title">⚠ Atualize o registrador agora</div>
+    Cole os 4 nameservers no provedor do domínio (veja a <a href="#nameservers">Seção 5</a>). Aguarde as ferramentas públicas de DNS mostrarem os novos NS antes da Fase 2.
   </div>
 
-  <p class="shell-label">Phase 2 — full apply</p>
+  <p class="shell-label">Fase 2 — apply completo</p>
 <pre><code>terraform plan  -var-file=<span class="str">"envs/prod.tfvars"</span>
 terraform apply -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
 
-  <p>Terraform will create: <strong>Route 53 hosted zone</strong> (if not already from Phase 1), <strong>ACM certificate</strong> (us-east-1), <strong>DNS validation CNAMEs</strong>, <strong>A + AAAA alias records</strong>, plus S3 + CloudFront. Full apply takes ~10–15 minutes after NS have propagated.</p>
+  <p>O Terraform criará: <strong>hosted zone no Route 53</strong> (se ainda não existir da Fase 1), <strong>certificado ACM</strong> (us-east-1), <strong>CNAMEs de validação DNS</strong>, <strong>registros alias A + AAAA</strong>, além de S3 + CloudFront. O apply completo leva cerca de 10–15 minutos após a propagação dos NS.</p>
 
   <div class="card blue">
-    <div class="card-title">ℹ ACM validation wait</div>
-    Terraform blocks at <code>aws_acm_certificate_validation</code> until AWS can resolve the validation CNAME via public DNS. If it times out, nameserver propagation is not complete yet — wait and re-run <code>terraform apply</code>.
+    <div class="card-title">ℹ Espera da validação ACM</div>
+    O Terraform fica bloqueado em <code>aws_acm_certificate_validation</code> até a AWS conseguir resolver o CNAME de validação via DNS público. Se der timeout, a propagação dos nameservers ainda não terminou — aguarde e execute <code>terraform apply</code> novamente.
   </div>
 
-  <h3 id="prod-upload">Upload HTML files</h3>
+  <h3 id="prod-upload">Enviar arquivos HTML</h3>
   <p class="shell-label">Bash / macOS / Linux</p>
 <pre><code>BUCKET=$(terraform output -raw content_bucket_name)
 
@@ -560,8 +560,8 @@ aws s3 cp error.html s3://$BUCKET/error.html</code></pre>
 aws s3 cp index.html <span class="str">"s3://$BUCKET/index.html"</span>
 aws s3 cp error.html <span class="str">"s3://$BUCKET/error.html"</span></code></pre>
 
-  <h3>Check outputs</h3>
-  <p>After a successful apply, <code>terraform output</code> prints:</p>
+  <h3>Conferir os outputs</h3>
+  <p>Após um apply bem-sucedido, <code>terraform output</code> exibe:</p>
   <div class="output-block">
     <span class="out-key">apex_url</span>               <span class="out-eq">=</span> <span class="out-str">"https://ataqtech.com"</span><br/>
     <span class="out-key">www_url</span>                <span class="out-eq">=</span> <span class="out-str">"https://www.ataqtech.com"</span><br/>
@@ -575,21 +575,21 @@ aws s3 cp error.html <span class="str">"s3://$BUCKET/error.html"</span></code></
     &nbsp;&nbsp;<span class="out-str">"ns-1.awsdns-57.co.uk"</span>,<br/>
     &nbsp;&nbsp;<span class="out-str">"ns-1.awsdns-19.com"</span>,<br/>
     <span class="out-list">]</span><br/>
-    <span class="out-key">nameserver_setup_instructions</span> <span class="out-eq">=</span> <span class="out-str">"&lt;step-by-step registrar guide&gt;"</span>
+    <span class="out-key">nameserver_setup_instructions</span> <span class="out-eq">=</span> <span class="out-str">"&lt;guia passo a passo do registrador&gt;"</span>
   </div>
 
   <!-- ══ 5. NAMESERVERS ═════════════════════════════════════ -->
-  <h2 class="section" id="nameservers"><span class="num">5</span>Configuring Nameservers at Your Registrar</h2>
-  <p>Terraform creates the Route 53 hosted zone, but pointing your domain at those nameservers is a one-time manual step in your <strong>domain registrar</strong> control panel.</p>
+  <h2 class="section" id="nameservers"><span class="num">5</span>Configurar Nameservers no Registrador</h2>
+  <p>O Terraform cria a hosted zone no Route 53, mas apontar o domínio para esses nameservers é um passo manual único no painel do <strong>registrador do domínio</strong>.</p>
 
-  <h3>Where to find the nameserver values</h3>
-  <p>After Phase 1 (or any apply that created the zone), run:</p>
+  <h3>Onde encontrar os valores de nameserver</h3>
+  <p>Após a Fase 1 (ou qualquer apply que tenha criado a zone), execute:</p>
 <pre><code>terraform output route53_nameservers
 terraform output nameserver_setup_instructions</code></pre>
-  <p>Or find them in the AWS Console → Route 53 → Hosted Zones → your domain → NS record.</p>
+  <p>Ou localize-os no Console AWS → Route 53 → Hosted Zones → seu domínio → registro NS.</p>
 
   <div class="ns-box">
-    <p>Example nameservers (yours will be different):</p>
+    <p>Exemplo de nameservers (os seus serão diferentes):</p>
     <div class="ns-entry"><div class="ns-dot"></div><span class="ns-val">ns-8.awsdns-47.net</span></div>
     <div class="ns-entry"><div class="ns-dot"></div><span class="ns-val">ns-1.awsdns-60.org</span></div>
     <div class="ns-entry"><div class="ns-dot"></div><span class="ns-val">ns-1.awsdns-57.co.uk</span></div>
@@ -597,14 +597,14 @@ terraform output nameserver_setup_instructions</code></pre>
   </div>
 
   <div class="card yellow">
-    <div class="card-title">⚠ Remove trailing dots</div>
-    Some registrars don't accept the trailing period (<code>.</code>). Remove it if the form rejects the values.
+    <div class="card-title">⚠ Remova o ponto final</div>
+    Alguns registradores não aceitam o ponto final (<code>.</code>). Remova-o se o formulário rejeitar os valores.
   </div>
 
-  <h3>Step-by-step per registrar</h3>
+  <h3>Passo a passo por registrador</h3>
   <table>
     <thead>
-      <tr><th>Registrar</th><th>Path to Nameserver Settings</th></tr>
+      <tr><th>Registrador</th><th>Caminho até as configurações de Nameserver</th></tr>
     </thead>
     <tbody>
       <tr><td><strong>GoDaddy</strong></td><td>My Products → DNS → Nameservers → Change → Enter my own nameservers</td></tr>
@@ -612,82 +612,82 @@ terraform output nameserver_setup_instructions</code></pre>
       <tr><td><strong>Registro.br</strong></td><td>Domínios → seu domínio → Servidores DNS → Configurar</td></tr>
       <tr><td><strong>Cloudflare Registrar</strong></td><td>Domain Registration → your domain → Nameservers</td></tr>
       <tr><td><strong>Google / Squarespace</strong></td><td>DNS → Custom name servers → Use custom name servers</td></tr>
-      <tr><td><strong>AWS Route 53 Registrar</strong></td><td>Not needed — hosted zone is already authoritative</td></tr>
+      <tr><td><strong>AWS Route 53 Registrar</strong></td><td>Não é necessário — a hosted zone já é autoritativa</td></tr>
     </tbody>
   </table>
 
-  <h3>Verify propagation</h3>
-  <p>Propagation takes <strong>5 minutes to 48 hours</strong>. Check with a public DNS tool:</p>
+  <h3>Verificar a propagação</h3>
+  <p>A propagação leva de <strong>5 minutos a 48 horas</strong>. Confira com uma ferramenta pública de DNS:</p>
   <ul>
-    <li><strong>dnschecker.org</strong> — search your domain, select record type NS</li>
-    <li><strong>whatsmydns.net</strong> — shows results per region globally</li>
+    <li><strong>dnschecker.org</strong> — pesquise seu domínio e selecione o tipo de registro NS</li>
+    <li><strong>whatsmydns.net</strong> — mostra resultados por região no mundo</li>
   </ul>
-  <p>When all regions show your Route 53 NS values, ACM validation will complete automatically on the next <code>terraform apply</code> (or it already completed if propagation happened during apply).</p>
+  <p>Quando todas as regiões exibirem os valores NS do Route 53, a validação do ACM será concluída automaticamente no próximo <code>terraform apply</code> (ou já terá sido concluída se a propagação ocorreu durante o apply).</p>
 
   <!-- ══ 6. DEV VS PROD ═════════════════════════════════════ -->
-  <h2 class="section" id="differences"><span class="num">6</span>Dev vs Prod — Key Differences</h2>
+  <h2 class="section" id="differences"><span class="num">6</span>Dev vs Prod — Principais Diferenças</h2>
 
   <table>
     <thead>
       <tr>
-        <th>Feature</th>
+        <th>Recurso</th>
         <th><span class="badge badge-dev">dev</span></th>
         <th><span class="badge badge-prod">prod</span></th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><strong>Custom domain</strong></td>
-        <td><span class="badge badge-no">No</span> — uses <code>*.cloudfront.net</code></td>
-        <td><span class="badge badge-yes">Yes</span> — your domain via ACM + Route 53</td>
+        <td><strong>Domínio personalizado</strong></td>
+        <td><span class="badge badge-no">Não</span> — usa <code>*.cloudfront.net</code></td>
+        <td><span class="badge badge-yes">Sim</span> — seu domínio via ACM + Route 53</td>
       </tr>
       <tr>
-        <td><strong>ACM Certificate</strong></td>
-        <td><span class="badge badge-no">No</span> — default CloudFront cert</td>
-        <td><span class="badge badge-yes">Yes</span> — TLS 1.2+ with your domain</td>
+        <td><strong>Certificado ACM</strong></td>
+        <td><span class="badge badge-no">Não</span> — certificado padrão do CloudFront</td>
+        <td><span class="badge badge-yes">Sim</span> — TLS 1.2+ com seu domínio</td>
       </tr>
       <tr>
-        <td><strong>Route 53 records</strong></td>
-        <td><span class="badge badge-no">Not created</span></td>
-        <td><span class="badge badge-yes">A + AAAA</span> for apex and www</td>
+        <td><strong>Registros Route 53</strong></td>
+        <td><span class="badge badge-no">Não criados</span></td>
+        <td><span class="badge badge-yes">A + AAAA</span> para apex e www</td>
       </tr>
       <tr>
         <td><strong>S3 force_destroy</strong></td>
-        <td><span class="badge badge-yes">true</span> — easy cleanup</td>
-        <td><span class="badge badge-no">false</span> — prevents accidental deletion</td>
+        <td><span class="badge badge-yes">true</span> — limpeza fácil</td>
+        <td><span class="badge badge-no">false</span> — evita exclusão acidental</td>
       </tr>
       <tr>
-        <td><strong>Access logs</strong></td>
-        <td><span class="badge badge-no">Not enabled</span></td>
-        <td><span class="badge badge-no">Not enabled</span></td>
+        <td><strong>Logs de acesso</strong></td>
+        <td><span class="badge badge-no">Desabilitado</span></td>
+        <td><span class="badge badge-no">Desabilitado</span></td>
       </tr>
       <tr>
-        <td><strong>CloudFront price class</strong></td>
-        <td><code>PriceClass_100</code> (US + EU)</td>
-        <td><code>PriceClass_100</code> (US + EU)</td>
+        <td><strong>Classe de preço CloudFront</strong></td>
+        <td><code>PriceClass_100</code> (EUA + UE)</td>
+        <td><code>PriceClass_100</code> (EUA + UE)</td>
       </tr>
       <tr>
-        <td><strong>Encryption at rest</strong></td>
-        <td>SSE-S3 (AES-256, free)</td>
-        <td>SSE-S3 (AES-256, free)</td>
+        <td><strong>Criptografia em repouso</strong></td>
+        <td>SSE-S3 (AES-256, gratuito)</td>
+        <td>SSE-S3 (AES-256, gratuito)</td>
       </tr>
       <tr>
-        <td><strong>Encryption in transit</strong></td>
+        <td><strong>Criptografia em trânsito</strong></td>
         <td>HTTPS via CloudFront</td>
-        <td>HTTPS via CloudFront + TLS 1.2 min</td>
+        <td>HTTPS via CloudFront + TLS 1.2 mínimo</td>
       </tr>
       <tr>
-        <td><strong>Approximate monthly cost</strong></td>
+        <td><strong>Custo mensal aproximado</strong></td>
         <td>~$0 – $0.50</td>
         <td>~$0.50 – $2</td>
       </tr>
       <tr>
-        <td><strong>Tfvars file</strong></td>
+        <td><strong>Arquivo tfvars</strong></td>
         <td><code>envs/dev.tfvars</code></td>
         <td><code>envs/prod.tfvars</code></td>
       </tr>
       <tr>
-        <td><strong>Environment tag</strong></td>
+        <td><strong>Tag de ambiente</strong></td>
         <td><code>Environment = "dev"</code></td>
         <td><code>Environment = "prod"</code></td>
       </tr>
@@ -695,22 +695,22 @@ terraform output nameserver_setup_instructions</code></pre>
   </table>
 
   <!-- ══ 7. ESTIMATED COST ══════════════════════════════════ -->
-  <h2 class="section" id="estimated-cost"><span class="num">7</span>Estimated Cost</h2>
-  <p>Estimates below are calculated with <strong>AWS list prices for the current year (2026)</strong> in <code>us-east-1</code>, using pay-as-you-go pricing and <code>PriceClass_100</code>. Actual charges vary with traffic, storage, and region. Domain registration (registrar fee) is billed separately and is not included.</p>
+  <h2 class="section" id="estimated-cost"><span class="num">7</span>Custo Estimado</h2>
+  <p>As estimativas abaixo são calculadas com base nos <strong>preços de tabela da AWS para o ano corrente (2026)</strong> em <code>us-east-1</code>, usando preço pay-as-you-go e <code>PriceClass_100</code>. Os valores reais variam conforme tráfego, armazenamento e região. O registro do domínio (taxa do registrador) é cobrado à parte e não está incluído.</p>
 
   <div class="card blue">
-    <div class="card-title">ℹ Pricing basis</div>
-    Figures reflect <strong>2026</strong> public AWS pricing at the time this guide was written. Re-check the AWS Pricing pages before production budgeting — rates can change.
+    <div class="card-title">ℹ Base de preços</div>
+    Os valores refletem o preço público da AWS em <strong>2026</strong>, na época em que este guia foi escrito. Confira novamente as páginas de Pricing da AWS antes de orçar produção — as tarifas podem mudar.
   </div>
 
-  <h3>Monthly cost by service (low-traffic landing page)</h3>
+  <h3>Custo mensal por serviço (landing page de baixo tráfego)</h3>
   <table>
     <thead>
       <tr>
-        <th>Service</th>
+        <th>Serviço</th>
         <th><span class="badge badge-dev">dev</span></th>
         <th><span class="badge badge-prod">prod</span></th>
-        <th>Notes</th>
+        <th>Observações</th>
       </tr>
     </thead>
     <tbody>
@@ -718,60 +718,60 @@ terraform output nameserver_setup_instructions</code></pre>
         <td><strong>Amazon S3</strong></td>
         <td>~$0.01</td>
         <td>~$0.01 – $0.05</td>
-        <td>Storage for HTML/assets (&lt;1&nbsp;GB). Transfer to CloudFront is free.</td>
+        <td>Armazenamento de HTML/assets (&lt;1&nbsp;GB). Transferência para o CloudFront é gratuita.</td>
       </tr>
       <tr>
         <td><strong>Amazon CloudFront</strong></td>
         <td>~$0 – $0.50</td>
         <td>~$0.10 – $1.50</td>
-        <td>Data transfer out + HTTPS requests. Often near $0 at very low traffic; Free Tier may apply for new accounts.</td>
+        <td>Transferência de saída + requisições HTTPS. Com tráfego muito baixo, costuma ficar perto de $0; Free Tier pode valer para contas novas.</td>
       </tr>
       <tr>
         <td><strong>AWS Certificate Manager</strong></td>
         <td><span class="badge badge-no">N/A</span></td>
-        <td><span class="badge badge-yes">Free</span></td>
-        <td>Public certificates used with CloudFront are free.</td>
+        <td><span class="badge badge-yes">Grátis</span></td>
+        <td>Certificados públicos usados com CloudFront são gratuitos.</td>
       </tr>
       <tr>
         <td><strong>Amazon Route 53</strong></td>
         <td><span class="badge badge-no">N/A</span></td>
         <td>~$0.50</td>
-        <td>Hosted zone fee ($0.50/mo). Alias queries to CloudFront are not charged.</td>
+        <td>Taxa da hosted zone ($0.50/mês). Consultas alias para CloudFront não são cobradas.</td>
       </tr>
       <tr>
-        <td><strong>Estimated total / month</strong></td>
+        <td><strong>Total estimado / mês</strong></td>
         <td><strong>~$0 – $0.50</strong></td>
         <td><strong>~$0.50 – $2</strong></td>
-        <td>Typical small landing page (&lt;10&nbsp;GB transfer / month).</td>
+        <td>Landing page pequena típica (&lt;10&nbsp;GB de transferência / mês).</td>
       </tr>
     </tbody>
   </table>
 
-  <h3>What drives cost up</h3>
+  <h3>O que aumenta o custo</h3>
   <ul>
-    <li><strong>CloudFront data transfer</strong> — main variable cost as traffic grows (~$0.085/GB in PriceClass_100 regions after Free Tier).</li>
-    <li><strong>Cache invalidations</strong> — first 1,000 paths/month free; then $0.005 per 1,000 paths.</li>
-    <li><strong>Route 53 hosted zone</strong> — fixed $0.50/month whenever a custom domain is used (prod).</li>
+    <li><strong>Transferência de dados do CloudFront</strong> — principal custo variável conforme o tráfego cresce (~$0.085/GB nas regiões PriceClass_100 após o Free Tier).</li>
+    <li><strong>Invalidações de cache</strong> — os primeiros 1.000 paths/mês são gratuitos; depois, $0.005 por 1.000 paths.</li>
+    <li><strong>Hosted zone do Route 53</strong> — $0.50/mês fixos sempre que um domínio personalizado é usado (prod).</li>
   </ul>
 
   <div class="card green">
-    <div class="card-title">✓ Cost takeaway</div>
-    For this stack, infrastructure cost is usually under <strong>$2/month</strong> for a low-traffic landing page. Prod’s baseline is the Route 53 hosted zone; everything else scales with visitors.
+    <div class="card-title">✓ Resumo de custo</div>
+    Neste stack, o custo de infraestrutura costuma ficar abaixo de <strong>$2/mês</strong> para uma landing page de baixo tráfego. Em prod, a base é a hosted zone do Route 53; o restante escala com o número de visitantes.
   </div>
 
   <!-- ══ 8. CACHE INVALIDATION ══════════════════════════════ -->
-  <h2 class="section" id="cache"><span class="num">8</span>Cache Invalidation</h2>
-  <p>After uploading new HTML files, CloudFront may serve the old cached version for up to 24 hours (the default TTL). Run a cache invalidation to force immediate refresh:</p>
+  <h2 class="section" id="cache"><span class="num">8</span>Invalidação de Cache</h2>
+  <p>Após enviar novos arquivos HTML, o CloudFront pode servir a versão antiga em cache por até 24 horas (TTL padrão). Execute uma invalidação de cache para forçar a atualização imediata:</p>
 
   <p class="shell-label">Bash / macOS / Linux</p>
 <pre><code>DIST_ID=$(terraform output -raw cloudfront_distribution_id)
 
-<span class="cm"># Invalidate all files</span>
+<span class="cm"># Invalida todos os arquivos</span>
 aws cloudfront create-invalidation \
   --distribution-id $DIST_ID \
   --paths <span class="str">"/*"</span>
 
-<span class="cm"># Invalidate a specific file only</span>
+<span class="cm"># Invalida apenas um arquivo específico</span>
 aws cloudfront create-invalidation \
   --distribution-id $DIST_ID \
   --paths <span class="str">"/index.html"</span></code></pre>
@@ -779,27 +779,27 @@ aws cloudfront create-invalidation \
   <p class="shell-label">PowerShell (Windows)</p>
 <pre><code>$DIST_ID = terraform output -raw cloudfront_distribution_id
 
-<span class="cm"># Invalidate all files</span>
+<span class="cm"># Invalida todos os arquivos</span>
 aws cloudfront create-invalidation `
   --distribution-id $DIST_ID `
   --paths <span class="str">"/*"</span>
 
-<span class="cm"># Invalidate a specific file only</span>
+<span class="cm"># Invalida apenas um arquivo específico</span>
 aws cloudfront create-invalidation `
   --distribution-id $DIST_ID `
   --paths <span class="str">"/index.html"</span></code></pre>
 
   <div class="card blue">
-    <div class="card-title">ℹ Cost note</div>
-    The first 1,000 invalidation paths per month are free. Each additional 1,000 paths costs $0.005. For dev, set <code>cloudfront_default_ttl = 0</code> in <code>dev.tfvars</code> to disable caching entirely.
+    <div class="card-title">ℹ Nota de custo</div>
+    Os primeiros 1.000 paths de invalidação por mês são gratuitos. Cada 1.000 paths adicionais custam $0.005. Em dev, defina <code>cloudfront_default_ttl = 0</code> no <code>dev.tfvars</code> para desativar o cache por completo.
   </div>
 
   <!-- ══ 9. DESTROY ═════════════════════════════════════════ -->
-  <h2 class="section" id="destroy"><span class="num">9</span>Destroying the Infrastructure</h2>
+  <h2 class="section" id="destroy"><span class="num">9</span>Destruir a Infraestrutura</h2>
 
   <div class="card red">
-    <div class="card-title">⛔ Warning — irreversible</div>
-    This permanently deletes the S3 content bucket and its contents, the CloudFront distribution, ACM certificate, Route 53 records, and the hosted zone. In prod, <code>force_destroy = false</code> means S3 will refuse deletion if the bucket is not empty — empty it first. Point your registrar away from these NS values before destroying if you still need the domain elsewhere.
+    <div class="card-title">⛔ Aviso — irreversível</div>
+    Isso exclui permanentemente o bucket S3 de conteúdo e seus arquivos, a distribuição CloudFront, o certificado ACM, os registros do Route 53 e a hosted zone. Em prod, <code>force_destroy = false</code> faz o S3 recusar a exclusão se o bucket não estiver vazio — esvazie-o antes. Aponte o registrador para outros NS antes de destruir se ainda precisar do domínio em outro lugar.
   </div>
 
   <h3>Dev</h3>
@@ -807,25 +807,25 @@ aws cloudfront create-invalidation `
 
   <h3>Prod</h3>
   <p class="shell-label">Bash / macOS / Linux</p>
-<pre><code><span class="cm"># Empty the bucket first (prod has force_destroy = false)</span>
+<pre><code><span class="cm"># Esvazie o bucket primeiro (prod tem force_destroy = false)</span>
 BUCKET=$(terraform output -raw content_bucket_name)
 aws s3 rm s3://$BUCKET --recursive
 
-<span class="cm"># Then destroy</span>
+<span class="cm"># Em seguida, destrua</span>
 terraform destroy -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
 
   <p class="shell-label">PowerShell (Windows)</p>
-<pre><code><span class="cm"># Empty the bucket first (prod has force_destroy = false)</span>
+<pre><code><span class="cm"># Esvazie o bucket primeiro (prod tem force_destroy = false)</span>
 $BUCKET = terraform output -raw content_bucket_name
 aws s3 rm <span class="str">"s3://$BUCKET"</span> --recursive
 
-<span class="cm"># Then destroy</span>
+<span class="cm"># Em seguida, destrua</span>
 terraform destroy -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
 
   <!-- ══ FOOTER ═════════════════════════════════════════════ -->
   <div class="doc-footer">
-    <span>AtaqTech — Deployment Guide v1.0</span>
-    <span>Generated Jul 2026 · Terraform ≥ 1.6 · AWS Provider ~&gt; 5.0</span>
+    <span>AtaqTech — Guia de Deploy v1.0 (PT-BR)</span>
+    <span>Gerado em Jul 2026 · Terraform ≥ 1.6 · AWS Provider ~&gt; 5.0</span>
   </div>
 
 </div>
@@ -848,8 +848,8 @@ terraform destroy -var-file=<span class="str">"envs/prod.tfvars"</span></code></
     var btn = document.createElement("button");
     btn.type = "button";
     btn.className = "copy-btn";
-    btn.title = "Copy";
-    btn.setAttribute("aria-label", "Copy code");
+    btn.title = "Copiar";
+    btn.setAttribute("aria-label", "Copiar código");
     btn.innerHTML = iconCopy;
     wrap.appendChild(btn);
 
@@ -858,11 +858,11 @@ terraform destroy -var-file=<span class="str">"envs/prod.tfvars"</span></code></
       var done = function () {
         btn.classList.add("copied");
         btn.innerHTML = iconCheck;
-        btn.title = "Copied";
+        btn.title = "Copiado";
         setTimeout(function () {
           btn.classList.remove("copied");
           btn.innerHTML = iconCopy;
-          btn.title = "Copy";
+          btn.title = "Copiar";
         }, 1600);
       };
       if (navigator.clipboard && navigator.clipboard.writeText) {

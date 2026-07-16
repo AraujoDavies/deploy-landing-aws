@@ -47,7 +47,7 @@ variable "cloudfront_price_class" {
 # Custom domain — optional; leave empty for dev/staging
 # ─────────────────────────────────────────────────────────────
 variable "domain_name" {
-  description = "Root domain name for the website (e.g. example.com). When set, ACM + Route 53 records are created. Leave empty to use the default *.cloudfront.net domain."
+  description = "Root domain name for the website (e.g. example.com). When set, Terraform creates a Route 53 hosted zone, ACM certificate, and DNS records. Copy the nameserver outputs into your registrar. Leave empty to use the default *.cloudfront.net domain."
   type        = string
   default     = ""
 }

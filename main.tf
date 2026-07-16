@@ -1,11 +1,15 @@
 # ─────────────────────────────────────────────────────────────
-# Route 53 — look up the existing hosted zone by domain name.
+# Route 53 — create a public hosted zone for the custom domain.
 # Only executed when var.domain_name is provided.
+# After apply, copy the NS output into your domain registrar.
 # ─────────────────────────────────────────────────────────────
-data "aws_route53_zone" "main" {
-  count        = var.domain_name != "" ? 1 : 0
-  name         = var.domain_name
-  private_zone = false
+resource "aws_route53_zone" "main" {
+  count = var.domain_name != "" ? 1 : 0
+  name  = var.domain_name
+
+  tags = merge(var.common_tags, {
+    Name = "${var.project_name}-${var.environment}-zone"
+  })
 }
 
 # ─────────────────────────────────────────────────────────────
@@ -19,7 +23,7 @@ module "acm" {
   project_name   = var.project_name
   environment    = var.environment
   domain_name    = var.domain_name
-  hosted_zone_id = data.aws_route53_zone.main[0].zone_id
+  hosted_zone_id = aws_route53_zone.main[0].zone_id
   common_tags    = var.common_tags
 }
 
@@ -48,7 +52,7 @@ module "route53" {
   source = "./modules/route53"
 
   domain_name            = var.domain_name
-  hosted_zone_id         = data.aws_route53_zone.main[0].zone_id
+  hosted_zone_id         = aws_route53_zone.main[0].zone_id
   cloudfront_domain_name = module.static_website.cloudfront_domain_name
 
   depends_on = [module.acm]
