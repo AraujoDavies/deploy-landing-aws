@@ -35,7 +35,8 @@ output "route53_nameservers" {
 
 output "nameserver_setup_instructions" {
   description = "Step-by-step instructions to point your registrar at the Route 53 nameservers"
-  value = var.domain_name != "" ? <<-EOT
+  value = var.domain_name != "" ? (
+    <<-EOT
     Hosted zone created for: ${var.domain_name}
 
     Next step — register these nameservers at your domain provider:
@@ -45,13 +46,14 @@ output "nameserver_setup_instructions" {
     3. Replace the current nameservers with these Route 53 values:
     ${join("\n", [for ns in aws_route53_zone.main[0].name_servers : "   - ${trimsuffix(ns, ".")}"])}
     4. Save and wait for DNS propagation (5 minutes to 48 hours).
+       Check propagation: https://dnschecker.org/#NS/${var.domain_name}
     5. Re-run: terraform apply -var-file="envs/prod.tfvars"
        if ACM validation was still pending.
 
     Note: Terraform creates the hosted zone only. You must already own the domain
     at a registrar — this does not purchase/register a new domain.
-  EOT
-  : "N/A — set domain_name to enable custom domain / hosted zone"
+    EOT
+  ) : "N/A — set domain_name to enable custom domain / hosted zone"
 }
 
 output "certificate_arn" {
