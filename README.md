@@ -4,12 +4,10 @@ Terraform project that deploys a static landing page on AWS with **S3**, **Cloud
 
 ## Guia de Deploy
 
-Full step-by-step deployment docs:
+Full step-by-step deployment docs (GitHub Pages):
 
-- **[Português (PT-BR)](docs/deployment-guide.pt-BR.html)**
-- **[English](docs/deployment-guide.html)**
-
-> Tip: to view the guides as styled pages on GitHub, enable **Settings → Pages**, source branch `master`, folder `/docs`. Then open `…/deployment-guide.pt-BR.html` on the Pages URL.
+- **[Português (PT-BR)](https://araujodavies.github.io/deploy-landing-aws/deployment-guide.pt-BR.html)**
+- **[English](https://araujodavies.github.io/deploy-landing-aws/deployment-guide.html)**
 
 ## Quick start
 
