@@ -143,6 +143,7 @@
       position: relative;
       margin: 12px 0 20px;
     }
+    .code-block + .code-block { margin-top: -8px; }
     .shell-label + .code-block { margin-top: 6px; }
     pre {
       background: #060e20;
@@ -408,7 +409,7 @@
   </ul>
 
   <h3>Permissões AWS necessárias</h3>
-  <p>O usuário ou role IAM que executa o Terraform precisa de permissões para: <strong>S3</strong>, <strong>CloudFront</strong>, <strong>ACM</strong> (us-east-1), <strong>Route 53</strong> e <strong>KMS</strong> (se for reativado).</p>
+  <p>O usuário ou role IAM que executa o Terraform precisa de permissões para: <strong>S3</strong>, <strong>CloudFront</strong>, <strong>ACM</strong> (us-east-1) e <strong>Route 53</strong>.</p>
 
   <h3>Bucket S3 do remote state (backend.tf)</h3>
   <p>Antes do primeiro <code>terraform init</code>, edite o <code>backend.tf</code> e substitua os placeholders:</p>
@@ -454,9 +455,8 @@
 
   <h3 id="dev-apply">Passo 2 — Plan &amp; Apply</h3>
 <pre><code><span class="cm"># Prévia do que será criado (sem alterações)</span>
-terraform plan -var-file=<span class="str">"envs/dev.tfvars"</span>
-
-<span class="cm"># Cria todos os recursos</span>
+terraform plan -var-file=<span class="str">"envs/dev.tfvars"</span></code></pre>
+<pre><code><span class="cm"># Cria todos os recursos</span>
 terraform apply -var-file=<span class="str">"envs/dev.tfvars"</span></code></pre>
 
   <p>O Terraform criará: <strong>1 bucket S3</strong> (conteúdo), <strong>1 distribuição CloudFront</strong>. Leva cerca de 3 minutos.</p>
@@ -464,19 +464,15 @@ terraform apply -var-file=<span class="str">"envs/dev.tfvars"</span></code></pre
   <h3 id="dev-upload">Passo 3 — Enviar arquivos HTML</h3>
   <p class="shell-label">Bash / macOS / Linux</p>
 <pre><code><span class="cm"># Obtém o nome do bucket a partir dos outputs</span>
-BUCKET=$(terraform output -raw content_bucket_name)
-
-<span class="cm"># Envia as duas páginas</span>
-aws s3 cp index.html s3://$BUCKET/index.html
-aws s3 cp error.html s3://$BUCKET/error.html</code></pre>
+BUCKET=$(terraform output -raw content_bucket_name)</code></pre>
+<pre><code>aws s3 cp index.html s3://$BUCKET/index.html</code></pre>
+<pre><code>aws s3 cp error.html s3://$BUCKET/error.html</code></pre>
 
   <p class="shell-label">PowerShell (Windows)</p>
 <pre><code><span class="cm"># Obtém o nome do bucket a partir dos outputs</span>
-$BUCKET = terraform output -raw content_bucket_name
-
-<span class="cm"># Envia as duas páginas</span>
-aws s3 cp index.html <span class="str">"s3://$BUCKET/index.html"</span>
-aws s3 cp error.html <span class="str">"s3://$BUCKET/error.html"</span></code></pre>
+$BUCKET = terraform output -raw content_bucket_name</code></pre>
+<pre><code>aws s3 cp index.html <span class="str">"s3://$BUCKET/index.html"</span></code></pre>
+<pre><code>aws s3 cp error.html <span class="str">"s3://$BUCKET/error.html"</span></code></pre>
 
   <h3>Passo 4 — Abrir o site</h3>
 <pre><code>terraform output website_url
@@ -526,10 +522,9 @@ aws s3 cp error.html <span class="str">"s3://$BUCKET/error.html"</span></code></
   <p>O ACM precisa que o registrador use os nameservers do Route 53 antes de concluir a validação. Crie a hosted zone primeiro, atualize o registrador e só então finalize o stack:</p>
 
   <p class="shell-label">Fase 1 — criar apenas a hosted zone</p>
-<pre><code>terraform apply -target=<span class="str">"aws_route53_zone.main"</span> -var-file=<span class="str">"envs/prod.tfvars"</span>
-
-terraform output route53_nameservers
-terraform output nameserver_setup_instructions</code></pre>
+<pre><code>terraform apply -target=<span class="str">"aws_route53_zone.main"</span> -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
+<pre><code>terraform output route53_nameservers</code></pre>
+<pre><code>terraform output nameserver_setup_instructions</code></pre>
 
   <div class="card yellow">
     <div class="card-title">⚠ Atualize o registrador agora</div>
@@ -537,8 +532,8 @@ terraform output nameserver_setup_instructions</code></pre>
   </div>
 
   <p class="shell-label">Fase 2 — apply completo</p>
-<pre><code>terraform plan  -var-file=<span class="str">"envs/prod.tfvars"</span>
-terraform apply -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
+<pre><code>terraform plan  -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
+<pre><code>terraform apply -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
 
   <p>O Terraform criará: <strong>hosted zone no Route 53</strong> (se ainda não existir da Fase 1), <strong>certificado ACM</strong> (us-east-1), <strong>CNAMEs de validação DNS</strong>, <strong>registros alias A + AAAA</strong>, além de S3 + CloudFront. O apply completo leva cerca de 10–15 minutos após a propagação dos NS.</p>
 
@@ -549,16 +544,14 @@ terraform apply -var-file=<span class="str">"envs/prod.tfvars"</span></code></pr
 
   <h3 id="prod-upload">Enviar arquivos HTML</h3>
   <p class="shell-label">Bash / macOS / Linux</p>
-<pre><code>BUCKET=$(terraform output -raw content_bucket_name)
-
-aws s3 cp index.html s3://$BUCKET/index.html
-aws s3 cp error.html s3://$BUCKET/error.html</code></pre>
+<pre><code>BUCKET=$(terraform output -raw content_bucket_name)</code></pre>
+<pre><code>aws s3 cp index.html s3://$BUCKET/index.html</code></pre>
+<pre><code>aws s3 cp error.html s3://$BUCKET/error.html</code></pre>
 
   <p class="shell-label">PowerShell (Windows)</p>
-<pre><code>$BUCKET = terraform output -raw content_bucket_name
-
-aws s3 cp index.html <span class="str">"s3://$BUCKET/index.html"</span>
-aws s3 cp error.html <span class="str">"s3://$BUCKET/error.html"</span></code></pre>
+<pre><code>$BUCKET = terraform output -raw content_bucket_name</code></pre>
+<pre><code>aws s3 cp index.html <span class="str">"s3://$BUCKET/index.html"</span></code></pre>
+<pre><code>aws s3 cp error.html <span class="str">"s3://$BUCKET/error.html"</span></code></pre>
 
   <h3>Conferir os outputs</h3>
   <p>Após um apply bem-sucedido, <code>terraform output</code> exibe:</p>
@@ -584,8 +577,8 @@ aws s3 cp error.html <span class="str">"s3://$BUCKET/error.html"</span></code></
 
   <h3>Onde encontrar os valores de nameserver</h3>
   <p>Após a Fase 1 (ou qualquer apply que tenha criado a zone), execute:</p>
-<pre><code>terraform output route53_nameservers
-terraform output nameserver_setup_instructions</code></pre>
+<pre><code>terraform output route53_nameservers</code></pre>
+<pre><code>terraform output nameserver_setup_instructions</code></pre>
   <p>Ou localize-os no Console AWS → Route 53 → Hosted Zones → seu domínio → registro NS.</p>
 
   <div class="ns-box">
@@ -764,27 +757,23 @@ terraform output nameserver_setup_instructions</code></pre>
   <p>Após enviar novos arquivos HTML, o CloudFront pode servir a versão antiga em cache por até 24 horas (TTL padrão). Execute uma invalidação de cache para forçar a atualização imediata:</p>
 
   <p class="shell-label">Bash / macOS / Linux</p>
-<pre><code>DIST_ID=$(terraform output -raw cloudfront_distribution_id)
-
-<span class="cm"># Invalida todos os arquivos</span>
+<pre><code>DIST_ID=$(terraform output -raw cloudfront_distribution_id)</code></pre>
+<pre><code><span class="cm"># Invalida todos os arquivos</span>
 aws cloudfront create-invalidation \
   --distribution-id $DIST_ID \
-  --paths <span class="str">"/*"</span>
-
-<span class="cm"># Invalida apenas um arquivo específico</span>
+  --paths <span class="str">"/*"</span></code></pre>
+<pre><code><span class="cm"># Invalida apenas um arquivo específico</span>
 aws cloudfront create-invalidation \
   --distribution-id $DIST_ID \
   --paths <span class="str">"/index.html"</span></code></pre>
 
   <p class="shell-label">PowerShell (Windows)</p>
-<pre><code>$DIST_ID = terraform output -raw cloudfront_distribution_id
-
-<span class="cm"># Invalida todos os arquivos</span>
+<pre><code>$DIST_ID = terraform output -raw cloudfront_distribution_id</code></pre>
+<pre><code><span class="cm"># Invalida todos os arquivos</span>
 aws cloudfront create-invalidation `
   --distribution-id $DIST_ID `
-  --paths <span class="str">"/*"</span>
-
-<span class="cm"># Invalida apenas um arquivo específico</span>
+  --paths <span class="str">"/*"</span></code></pre>
+<pre><code><span class="cm"># Invalida apenas um arquivo específico</span>
 aws cloudfront create-invalidation `
   --distribution-id $DIST_ID `
   --paths <span class="str">"/index.html"</span></code></pre>
@@ -808,18 +797,16 @@ aws cloudfront create-invalidation `
   <h3>Prod</h3>
   <p class="shell-label">Bash / macOS / Linux</p>
 <pre><code><span class="cm"># Esvazie o bucket primeiro (prod tem force_destroy = false)</span>
-BUCKET=$(terraform output -raw content_bucket_name)
-aws s3 rm s3://$BUCKET --recursive
-
-<span class="cm"># Em seguida, destrua</span>
+BUCKET=$(terraform output -raw content_bucket_name)</code></pre>
+<pre><code>aws s3 rm s3://$BUCKET --recursive</code></pre>
+<pre><code><span class="cm"># Em seguida, destrua</span>
 terraform destroy -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
 
   <p class="shell-label">PowerShell (Windows)</p>
 <pre><code><span class="cm"># Esvazie o bucket primeiro (prod tem force_destroy = false)</span>
-$BUCKET = terraform output -raw content_bucket_name
-aws s3 rm <span class="str">"s3://$BUCKET"</span> --recursive
-
-<span class="cm"># Em seguida, destrua</span>
+$BUCKET = terraform output -raw content_bucket_name</code></pre>
+<pre><code>aws s3 rm <span class="str">"s3://$BUCKET"</span> --recursive</code></pre>
+<pre><code><span class="cm"># Em seguida, destrua</span>
 terraform destroy -var-file=<span class="str">"envs/prod.tfvars"</span></code></pre>
 
   <!-- ══ FOOTER ═════════════════════════════════════════════ -->
